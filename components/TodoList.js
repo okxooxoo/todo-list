@@ -1,14 +1,9 @@
-function TodoList($container, data) {
+function TodoList($container) {
   this.$container = $container
 
   this.render = (todos) => {
     this.data = todos
     this.$container.innerHTML = `
-    <div class="todo-input-wrapper">
-      <input type="text" class="new-todo-input" placeholder="할 일을 입력하세요" />
-      <button type="button" class="add-btn">추가</button>
-    </div>
-
     <div class="bulk-actions">
       <button type="button" class="complete-all-btn">전체 완료</button>
       <button type="button" class="delete-all-btn">전체 삭제</button>
