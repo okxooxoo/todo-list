@@ -79,6 +79,18 @@ function TodoList($container, { handleEdit, handleSave, handleDelete, handleComp
     }
   })
 
+  this.$container.addEventListener('keydown', (e) => {
+    if (!e.target.classList.contains('edit-input')) return
+    if (e.key !== 'Enter') return
+
+    const $li = e.target.closest('li')
+    if (!$li) return
+
+    const index = Number($li.dataset.index)
+    handleSave(e.target.value, index)
+  })
+
+
   this.$container.addEventListener('change', (e) => {
     const $li = e.target.closest('li')
     if (!$li) return
