@@ -1,3 +1,5 @@
+import { escapeHTML } from '../utils/string.js'
+
 function TodoList($container, { handleEdit, handleSave, handleDelete, handleComplete, handleCompleteAll, handleDeleteAll }) {
   this.$container = $container
 
@@ -12,10 +14,12 @@ function TodoList($container, { handleEdit, handleSave, handleDelete, handleComp
     <ul>${this.data
         .map(
           (todo, index) => {
+            const safeName = escapeHTML(todo.name)
+
             if (todo.isEditing) {
               return `
                 <li data-index="${index}">
-                  <input type="text" value="${todo.name}" class="edit-input" />
+                  <input type="text" value="${safeName}" class="edit-input" />
                   <button type="button" class="save-btn">저장</button>
                 </li>
               `
@@ -25,7 +29,7 @@ function TodoList($container, { handleEdit, handleSave, handleDelete, handleComp
               return `
                 <li data-index="${index}">
                   <input type="checkbox" class="toggle-complete" checked />
-                  <span class="toggle-complete-text" style="text-decoration: line-through;">${todo.name}</span>
+                  <span class="toggle-complete-text" style="text-decoration: line-through;">${safeName}</span>
                   <button type="button" class="delete-btn">삭제</button>
                 </li>
               `
@@ -34,7 +38,7 @@ function TodoList($container, { handleEdit, handleSave, handleDelete, handleComp
             return `
               <li data-index="${index}">
                 <input type="checkbox" class="toggle-complete" />
-                <span class="toggle-complete-text">${todo.name}</span>
+                <span class="toggle-complete-text">${safeName}</span>
                 <button type="button" class="edit-btn">수정</button>
                 <button type="button" class="delete-btn">삭제</button>
               </li>
@@ -81,7 +85,7 @@ function TodoList($container, { handleEdit, handleSave, handleDelete, handleComp
     const index = Number($li.dataset.index)
 
     if (e.target.classList.contains('toggle-complete')) {
-      handleComplete(index, e.target.checked)
+      handleComplete(index)
     }
   })
 }

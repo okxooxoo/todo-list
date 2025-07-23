@@ -27,6 +27,7 @@ function App() {
 			handleDeleteAll,
 		})
 
+		this.todoInput.render() // App 초기화 시 한 번만 렌더링
 		this.render()
 	}
 
@@ -80,10 +81,8 @@ function App() {
 	}
 
 	this.render = () => {
-		console.log("렌더링")
 		this.todoList.render(this.data)
 		this.todoStats.render(this.data)
-		this.todoInput.render()
 	}
 
 	this.init()
