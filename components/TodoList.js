@@ -1,4 +1,4 @@
-function TodoList($container) {
+function TodoList($container, { handleEdit, handleSave, handleDelete, handleComplete, handleCompleteAll, handleDeleteAll }) {
   this.$container = $container
 
   this.render = (todos) => {
@@ -44,6 +44,46 @@ function TodoList($container) {
     </ul>`
   }
 
+  this.$container.addEventListener('click', (e) => {
+    if (e.target.classList.contains('complete-all-btn')) {
+      handleCompleteAll()
+    }
+
+    if (e.target.classList.contains('delete-all-btn')) {
+      handleDeleteAll()
+    }
+
+    const $li = e.target.closest('li')
+    if (!$li) return
+    const index = Number($li.dataset.index)
+
+    if (e.target.classList.contains('edit-btn')) {
+      handleEdit(index)
+    }
+
+    if (e.target.classList.contains('save-btn')) {
+      const input = $li.querySelector('.edit-input')
+      handleSave(input.value, index)
+    }
+
+    if (e.target.classList.contains('delete-btn')) {
+      handleDelete(index)
+    }
+
+    if (e.target.classList.contains('toggle-complete-text')) {
+      handleComplete(index)
+    }
+  })
+
+  this.$container.addEventListener('change', (e) => {
+    const $li = e.target.closest('li')
+    if (!$li) return
+    const index = Number($li.dataset.index)
+
+    if (e.target.classList.contains('toggle-complete')) {
+      handleComplete(index, e.target.checked)
+    }
+  })
 }
 
 export default TodoList

@@ -1,9 +1,11 @@
 import TodoStats from './components/TodoStats.js'
 import TodoList from './components/TodoList.js'
 import TodoInput from './components/TodoInput.js'
+import { loadTodos, saveTodos } from './utils/storage.js'
 
 function App() {
 	this.data = []
+
 	this.todoStats = null
 	this.todoList = null
 	this.todoInput = null
@@ -12,16 +14,19 @@ function App() {
 	this.$todoInput = document.querySelector('#todo-input')
 
 	this.init = () => {
-		const savedData = localStorage.getItem('todos')
-		this.data = savedData ? JSON.parse(savedData) : []
-
-		this.data = this.data.map(todo => ({ ...todo, isEditing: false }))
+		this.data = loadTodos().map(todo => ({ ...todo, isEditing: false }))
 
 		this.todoStats = new TodoStats(this.$todoStats)
-		this.todoList = new TodoList(this.$todoList)
 		this.todoInput = new TodoInput(this.$todoInput, handleAdd)
+		this.todoList = new TodoList(this.$todoList, {
+			handleEdit,
+			handleSave,
+			handleDelete,
+			handleComplete,
+			handleCompleteAll,
+			handleDeleteAll,
+		})
 
-		this.setEventListeners()
 		this.render()
 	}
 
@@ -30,86 +35,55 @@ function App() {
 		this.setState(newData)
 	}
 
-	this.setEventListeners = () => {
-		this.$todoList.addEventListener('click', (e) => {
-			// 전체 완료 버튼 클릭
-			if (e.target.classList.contains('complete-all-btn')) {
-				const updatedData = this.data.map(todo => ({
-					...todo,
-					isCompleted: true
-				}))
-				this.setState(updatedData)
-			}
-
-			// 전체 삭제 버튼 클릭
-			if (e.target.classList.contains('delete-all-btn')) {
-				this.setState([])
-			}
-
-			const $li = e.target.closest('li')
-			if (!$li) return
-			const index = $li.dataset.index
-
-			if (e.target.classList.contains('toggle-complete')) {
-				const updatedData = this.data.map((todo, i) =>
-					i === Number(index)
-						? { ...todo, isCompleted: e.target.checked }
-						: todo
-				)
-				this.setState(updatedData)
-			}
-
-			if (e.target.classList.contains('toggle-complete-text')) {
-				const updatedData = this.data.map((todo, i) =>
-					i === Number(index)
-						? { ...todo, isCompleted: !todo.isCompleted }
-						: todo
-				)
-				this.setState(updatedData)
-			}
-
-			if (e.target.classList.contains('delete-btn')) {
-				const updatedData = this.data.filter((_, i) => i !== Number(index))
-				this.setState(updatedData)
-			}
-
-			if (e.target.classList.contains('edit-btn')) {
-				this.data[index].isEditing = true
-				this.render()
-			}
-
-			if (e.target.classList.contains('save-btn')) {
-				const $input = $li.querySelector('.edit-input')
-				const updatedData = [...this.data]
-				updatedData[index] = {
-					...updatedData[index],
-					name: $input.value,
-					isEditing: false
-				}
-				this.setState(updatedData)
-			}
-		})
+	const handleEdit = (index) => {
+		const updatedData = this.data.map((todo, i) =>
+			i === index ? { ...todo, isEditing: true } : todo
+		)
+		this.setState(updatedData)
 	}
 
-	this.saveToLocalStorage = () => {
-		const cleanData = this.data.map(({ name, isCompleted }) => ({
-			name,
-			isCompleted
-		}))
-		localStorage.setItem('todos', JSON.stringify(cleanData))
+	const handleSave = (newValue, index) => {
+		const updatedData = [...this.data]
+		updatedData[index] = {
+			...updatedData[index],
+			name: newValue,
+			isEditing: false
+		}
+		this.setState(updatedData)
 	}
 
-	// 상태 변경 시 Local Storage에 저장 후 리렌더링
+	const handleDelete = (index) => {
+		const updatedData = this.data.filter((_, i) => i !== index)
+		this.setState(updatedData)
+	}
+
+	const handleComplete = (index) => {
+		const updatedData = this.data.map((todo, i) =>
+			i === index ? { ...todo, isCompleted: !todo.isCompleted } : todo
+		)
+		this.setState(updatedData)
+	}
+
+	const handleCompleteAll = () => {
+		const updatedData = this.data.map(todo => ({ ...todo, isCompleted: true }))
+		this.setState(updatedData)
+	}
+
+	const handleDeleteAll = () => {
+		this.setState([])
+	}
+
 	this.setState = (nextState) => {
 		this.data = nextState
-		this.saveToLocalStorage()
+		saveTodos(this.data)
 		this.render()
 	}
 
 	this.render = () => {
+		console.log("렌더링")
 		this.todoList.render(this.data)
 		this.todoStats.render(this.data)
-		this.todoInput.render(this.data, handleAdd)
+		this.todoInput.render()
 	}
 
 	this.init()
